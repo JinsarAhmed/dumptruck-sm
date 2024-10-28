@@ -1,0 +1,74 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f1f1f1;
+    text-align: center;
+}
+
+.simulation-container {
+    max-width: 1000px;
+    margin: auto;
+    padding: 20px;
+}
+
+h1 {
+    color: #333;
+}
+
+.config-section {
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.truck-config-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin-bottom: 10px;
+}
+
+.simulation-display {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.stage {
+    width: 30%;
+    padding: 10px;
+    background-color: #e6e6e6;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.queue, .station {
+    min-height: 100px;
+    border: 2px dashed #666;
+    margin: 10px 0;
+    padding: 10px;
+}
+
+.truck {
+    display: inline-block;
+    padding: 5px;
+    background-color: #3498db;
+    color: white;
+    border-radius: 3px;
+    font-size: 16px;
+}
+
+.generate-button, .start-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.generate-button:hover, .start-button:hover {
+    background-color: #2980b9;
+}

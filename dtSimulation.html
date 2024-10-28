@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dump Truck Simulation</title>
+    <style>
+      :root {
+        --primary: #00ff9d;
+        --secondary: #2a2d3e;
+        --background: #1a1b26;
+        --surface: #24283b;
+        --error: #ff4499;
+        --text: #a9b1d6;
+      }
+
+      body {
+        font-family: "Inter", system-ui, -apple-system, sans-serif;
+        background-color: var(--background);
+        margin: 0;
+        padding: 20px;
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      .dashboard {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        text-align: center;
+        color: var(--primary);
+        font-size: 2.5rem;
+        margin-bottom: 2rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        text-shadow: 0 0 10px rgba(0, 255, 157, 0.3);
+      }
+      h2 {
+        text-align: center;
+        color: var(--primary);
+        font-size: 2.5rem;
+        margin-bottom: 2rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        text-shadow: 0 0 10px rgba(0, 255, 157, 0.3);
+      }
+
+      .control-panel {
+        background: var(--surface);
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        margin-bottom: 2rem;
+      }
+
+      .grid-controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      label {
+        color: var(--primary);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      input[type="number"] {
+        background: var(--background);
+        border: 2px solid var(--secondary);
+        color: var(--text);
+        padding: 0.75rem;
+        border-radius: 6px;
+        font-size: 1rem;
+        width: calc(100% - 1.5rem);
+      }
+
+      button {
+        background: var(--primary);
+        color: var(--background);
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        font-weight: bold;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 255, 157, 0.3);
+      }
+
+      .truck-config {
+        background: var(--surface);
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin: 1rem 0;
+      }
+
+      .truck-inputs {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin: 1rem 0;
+      }
+
+      .metric-card {
+        background: var(--surface);
+        padding: 1.5rem;
+        border-radius: 12px;
+        text-align: center;
+      }
+
+      .metric-value {
+        font-size: 2rem;
+        color: var(--primary);
+        margin: 0.5rem 0;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--surface);
+        border-radius: 12px;
+        overflow: hidden;
+        margin-top: 2rem;
+      }
+
+      th {
+        background: var(--secondary);
+        color: var(--primary);
+        padding: 1rem;
+        text-align: left;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+      }
+
+      td {
+        padding: 1rem;
+        border-top: 1px solid var(--background);
+      }
+
+      .refresh-btn {
+        background: var(--secondary);
+        color: var(--primary);
+        padding: 0.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-left: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard">
+      <h1>Dump Truck Simulation</h1>
+      <h2>Output</h2>
+
+      <div class="control-panel">
+        <div class="grid-controls">
+          <div class="input-group">
+            <label for="numTrucks">No. of Trucks</label>
+            <input type="number" id="numTrucks" value="3" min="1" />
+            <button id="setTrucksButton">Configure Trucks</button>
+          </div>
+          <div class="input-group">
+            <label for="numLoaders">Number of Loaders:</label>
+            <input type="number" id="numLoaders" value="2" min="1" />
+          </div>
+          <div class="input-group">
+            <label for="numScales">Number of Scales:</label>
+            <input type="number" id="numScales" value="1" min="1" />
+          </div>
+          <div class="input-group">
+            <button id="startButton">Start Simulation</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="truckTimesContainer"></div>
+
+      <div class="metrics">
+        <div class="metric-card">
+          <label>Loader Utilization</label>
+          <div class="metric-value" id="loaderBusyTime">0</div>
+          <div>Time Units</div>
+          <!-- <div>Average Loader Utilization</div>
+          <div id="avgload"></div> -->
+        </div>
+        <div class="metric-card">
+          <label>Scale Utilization</label>
+          <div class="metric-value" id="scaleBusyTime">0</div>
+          <div>Time Units</div>
+        </div>
+
+        <div class="metric-card">
+          <label>Average Loader Utilization</label>
+          <div id="avgload" class="metric-value"></div>
+        </div>
+        <div class="metric-card">
+          <label>Average Scale Utilization</label>
+          <div id="avgscale" class="metric-value"></div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Clock</th>
+            <th>Event</th>
+            <th>Loader Queue (LQ)</th>
+            <th>Trucks on Loaders (L)</th>
+            <th>Weighing Queue (WQ)</th>
+            <th>Trucks on Scale (W)</th>
+            <th>Busy Loader (BL)</th>
+            <th>Busy Scale (BS)</th>
+            <th>Future Event List</th>
+          </tr>
+        </thead>
+        <tbody id="simulationBody"></tbody>
+      </table>
+    </div>
+
+    <script>
+      function getRandomTime(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      function generateRandomTimes() {
+        return {
+          loadingTime: getRandomTime(5, 15),
+          weighingTime: getRandomTime(3, 8),
+          travelTime: getRandomTime(8, 20),
+        };
+      }
+
+      let clock = 0;
+      let loaderQueue = [];
+      let loaderBusy = [];
+      let weighingQueue = [];
+      let weighingTruck = null;
+      let futureEventList = [];
+      let BL = 0;
+      let BS = 0;
+      let numLoaders = 2;
+      let numScales = 1;
+      let truckDetails = {};
+      let loaderBusyTime = 0;
+      let scaleBusyTime = 0;
+
+      document.getElementById("setTrucksButton").onclick = function () {
+        const numTrucks = parseInt(document.getElementById("numTrucks").value);
+        const container = document.getElementById("truckTimesContainer");
+        container.innerHTML = "";
+
+        for (let i = 1; i <= numTrucks; i++) {
+          const randomTimes = generateRandomTimes();
+          const truckDiv = document.createElement("div");
+          truckDiv.className = "truck-config";
+          truckDiv.innerHTML = `
+                    <div class="input-group">
+                        <label>Truck T${i} Configuration</label>
+                        <div class="truck-inputs">
+                            <div>
+                                <label>Loading Time</label>
+                                <input type="number" id="loadingTimeT${i}" value="${randomTimes.loadingTime}" min="1">
+                            </div>
+                            <div>
+                                <label>Weighing Time</label>
+                                <input type="number" id="weighingTimeT${i}" value="${randomTimes.weighingTime}" min="1">
+                            </div>
+                            <div>
+                                <label>Travel Time</label>
+                                <input type="number" id="travelTimeT${i}" value="${randomTimes.travelTime}" min="1">
+                            </div>
+                            <button class="refresh-btn" onclick="regenerateTruck(${i})">🔄 Refresh</button>
+                        </div>
+                    </div>
+                `;
+          container.appendChild(truckDiv);
+        }
+      };
+
+      function regenerateTruck(truckNum) {
+        const randomTimes = generateRandomTimes();
+        document.getElementById(`loadingTimeT${truckNum}`).value =
+          randomTimes.loadingTime;
+        document.getElementById(`weighingTimeT${truckNum}`).value =
+          randomTimes.weighingTime;
+        document.getElementById(`travelTimeT${truckNum}`).value =
+          randomTimes.travelTime;
+      }
+
+      document.getElementById("startButton").onclick = function () {
+        const numTrucks = parseInt(document.getElementById("numTrucks").value);
+        numLoaders = parseInt(document.getElementById("numLoaders").value);
+        numScales = parseInt(document.getElementById("numScales").value);
+
+        loaderQueue = Array.from({ length: numTrucks }, (_, i) => `T${i + 1}`);
+        clock = 0;
+        loaderBusy = [];
+        weighingQueue = [];
+        weighingTruck = null;
+        futureEventList = [];
+        BL = 0;
+        BS = 0;
+        loaderBusyTime = 0;
+        scaleBusyTime = 0;
+
+        document.getElementById("simulationBody").innerHTML = "";
+
+        truckDetails = {};
+        for (let i = 1; i <= numTrucks; i++) {
+          truckDetails[`T${i}`] = {
+            loadingTime: parseInt(
+              document.getElementById(`loadingTimeT${i}`).value
+            ),
+            weighingTime: parseInt(
+              document.getElementById(`weighingTimeT${i}`).value
+            ),
+            travelTime: parseInt(
+              document.getElementById(`travelTimeT${i}`).value
+            ),
+          };
+        }
+
+        startSimulation();
+      };
+
+      function startSimulation() {
+        addRow("Simulation initialized.");
+        setInterval(runSimulationStep, 1000);
+      }
+
+      function runSimulationStep() {
+        processFutureEvents();
+
+        while (loaderQueue.length > 0 && loaderBusy.length < numLoaders) {
+          let truck = loaderQueue.shift();
+          loaderBusy.push(truck);
+          BL++;
+          const loadingTime = truckDetails[truck].loadingTime;
+          scheduleFutureEvent(clock + loadingTime, "EL", truck);
+          addRow(`${truck} commenced loading operation (${loadingTime} units)`);
+        }
+
+        if (
+          weighingTruck === null &&
+          weighingQueue.length > 0 &&
+          BS < numScales
+        ) {
+          weighingTruck = weighingQueue.shift();
+          BS++;
+          const weighingTime = truckDetails[weighingTruck].weighingTime;
+          scheduleFutureEvent(clock + weighingTime, "EW", weighingTruck);
+          addRow(
+            `${weighingTruck} initiated weighing sequence (${weighingTime} units)`
+          );
+        }
+
+        loaderBusyTime += loaderBusy.length;
+        scaleBusyTime += BS;
+
+        document.getElementById("loaderBusyTime").textContent = loaderBusyTime;
+        document.getElementById("scaleBusyTime").textContent = scaleBusyTime;
+
+        let avgloaderutil = 0;
+        let avgscaleutil = 0;
+
+        let calavgloaderutil = loaderBusyTime / 2;
+
+        avgloaderutil = calavgloaderutil / clock;
+        avgscaleutil = scaleBusyTime / clock;
+
+        // avgloaderutil = calavgloaderutil / scaleBusyTime;
+        // avgscaleutil = scaleBusyTime / scaleBusyTime;
+
+        document.getElementById("avgload").textContent = avgloaderutil;
+        document.getElementById("avgscale").textContent = avgscaleutil;
+
+        clock++;
+      }
+
+      function processFutureEvents() {
+        while (
+          futureEventList.length > 0 &&
+          futureEventList[0].eventTime <= clock
+        ) {
+          let event = futureEventList.shift();
+
+          if (event.eventType === "EL") {
+            loaderBusy = loaderBusy.filter((truck) => truck !== event.truckId);
+            BL--;
+
+            if (BS < numScales) {
+              weighingTruck = event.truckId;
+              BS++;
+              const weighingTime = truckDetails[weighingTruck].weighingTime;
+              scheduleFutureEvent(clock + weighingTime, "EW", weighingTruck);
+              addRow(
+                `${event.truckId} proceeding directly to scale (${weighingTime} units)`
+              );
+            } else {
+              weighingQueue.push(event.truckId);
+              addRow(`${event.truckId} joining weighing queue`);
+            }
+          } else if (event.eventType === "EW") {
+            addRow(`${event.truckId} completed weighing sequence`);
+            weighingTruck = null;
+            BS--;
+
+            if (weighingQueue.length > 0) {
+              weighingTruck = weighingQueue.shift();
+              BS++;
+              const weighingTime = truckDetails[weighingTruck].weighingTime;
+              scheduleFutureEvent(clock + weighingTime, "EW", weighingTruck);
+              addRow(
+                `${weighingTruck} moving to scale (${weighingTime} units)`
+              );
+            }
+          }
+        }
+      }
+
+      function scheduleFutureEvent(time, type, truckId) {
+        futureEventList.push({
+          eventTime: time,
+          eventType: type,
+          truckId: truckId,
+        });
+        futureEventList.sort((a, b) => a.eventTime - b.eventTime);
+      }
+
+      function addRow(eventDescription) {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+                <td>${clock}</td>
+                <td>${eventDescription}</td>
+                <td>${loaderQueue.join(", ") || "—"}</td>
+                <td>${loaderBusy.join(", ") || "—"}</td>
+                <td>${weighingQueue.join(", ") || "—"}</td>
+                <td>${weighingTruck || "—"}</td>
+                <td>${BL}</td>
+                <td>${BS}</td>
+                <td>${
+                  futureEventList
+                    .map((e) => `${e.eventType}(${e.truckId}) @ ${e.eventTime}`)
+                    .join(", ") || "—"
+                }</td>
+            `;
+        document.getElementById("simulationBody").appendChild(row);
+      }
+
+      // Initialize on page load
+      window.onload = function () {
+        document.getElementById("setTrucksButton").click();
+      };
+    </script>
+  </body>
+</html>
